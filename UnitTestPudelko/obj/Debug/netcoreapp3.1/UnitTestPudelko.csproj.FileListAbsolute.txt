@@ -1,0 +1,4 @@
+C:\Users\Administrator\source\repos\Pudelko\UnitTestPudelko\obj\Debug\netcoreapp3.1\UnitTestPudelko.csprojAssemblyReference.cache
+C:\Users\Administrator\source\repos\Pudelko\UnitTestPudelko\obj\Debug\netcoreapp3.1\UnitTestPudelko.AssemblyInfoInputs.cache
+C:\Users\Administrator\source\repos\Pudelko\UnitTestPudelko\obj\Debug\netcoreapp3.1\UnitTestPudelko.AssemblyInfo.cs
+C:\Users\Administrator\source\repos\Pudelko\UnitTestPudelko\obj\Debug\netcoreapp3.1\UnitTestPudelko.csproj.CoreCompileInputs.cache
