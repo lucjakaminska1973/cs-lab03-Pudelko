@@ -1,107 +1,144 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using System.Threading;
 
 namespace PudelkoLibrary
 {
-    public enum UnitOfMeasure 
+    public enum UnitOfMeasure
     {
         meter,
         milimeter,
         centimeter
     }
 
-    public sealed class Pudelko : IFormattable, IEquatable<Pudelko>
+    public sealed class Pudelko : IFormattable, IEquatable<Pudelko>, IEnumerable, IEnumerator
     {
         private readonly double a;
         private readonly double b;
         private readonly double c;
 
-        public UnitOfMeasure Unit{ get; set ;}
+        public UnitOfMeasure unit { get; set; }
+
+        protected double[] getSize;
+        public double[] sizesAsMeter => getSize;
 
         public Pudelko(double a, double b, double c, UnitOfMeasure unit)
         {
-            this.Unit = unit;
-            this.a = GetValue(a, Unit);
-            this.b = GetValue(b, Unit);
-            this.c = GetValue(c, Unit);
-        }
-
-        public Pudelko(double a, double b, UnitOfMeasure unit)
-        {
-            this.Unit = unit;
-            this.a = GetValue(a, Unit);
-            this.b = GetValue(b, Unit);
-            this.c = GetValue(0, Unit);
-        }
-
-        public Pudelko(double a, double b)
-        {
-            this.Unit = UnitOfMeasure.meter;
-            this.a = GetValue(a, Unit);
-            this.b = GetValue(b, Unit);
-            this.c = GetValue(0, Unit);
-        }
-
-        public Pudelko(double a, UnitOfMeasure unit)
-        {
-            this.Unit = unit;
-            this.a = GetValue(a, Unit);
-            this.b = GetValue(0, Unit);
-            this.c = GetValue(0, Unit);
-        }
-
-        public Pudelko(double a)
-        {
-            this.Unit = UnitOfMeasure.meter;
-            this.a = GetValue(a, Unit);
-            this.b = GetValue(0, Unit);
-            this.c = GetValue(0, Unit);
+            this.unit = unit;
+            this.a = GetValue(a, unit);
+            this.b = GetValue(b, unit);
+            this.c = GetValue(c, unit);
+            ToTab();
         }
 
         public Pudelko(double a, double b, double c)
         {
-            this.Unit = UnitOfMeasure.meter;
-            this.a = GetValue(a, Unit);
-            this.b = GetValue(b, Unit);
-            this.c = GetValue(c, Unit);
+            this.unit = UnitOfMeasure.meter;
+            this.a = GetValue(a, UnitOfMeasure.meter);
+            this.b = GetValue(b, UnitOfMeasure.meter);
+            this.c = GetValue(c, UnitOfMeasure.meter);
+            ToTab();
         }
 
-        public Pudelko() : this(10, 10, 10, UnitOfMeasure.centimeter) {}
+        public Pudelko(double a, double b, UnitOfMeasure unit)
+        {
+
+            this.unit = unit;
+            this.a = GetValue(a, unit);
+            this.b = GetValue(b, unit);
+            this.c = ValueDefoult(unit);
+            ToTab();
+        }
+
+        public Pudelko(double a, double b)
+        {
+            this.unit = UnitOfMeasure.meter;
+            this.a = GetValue(a, unit);
+            this.b = GetValue(b, unit);
+            this.c = ValueDefoult(unit);
+            ToTab();
+        }
+
+        public Pudelko(double a, UnitOfMeasure unit)
+        {
+            this.unit = unit;
+            this.a = GetValue(a, unit);
+            this.b = ValueDefoult(unit);
+            this.c = ValueDefoult(unit);
+            ToTab();
+        }
+
+        public Pudelko(double a)
+        {
+            this.unit = UnitOfMeasure.meter;
+            this.a = GetValue(a, unit);
+            this.b = ValueDefoult(unit);
+            this.c = ValueDefoult(unit);
+            ToTab();
+        }
+
+        
+
+        public Pudelko() : this(10, 10, 10, UnitOfMeasure.centimeter) { ToTab(); }
+
+        public void ToTab()
+        {
+            getSize = new double[] { A, B, C };
+            
+        }
 
         private double GetValue(double value, UnitOfMeasure unit)
         {
-            if (value < 0) throw new ArgumentOutOfRangeException("Wartość nie może być mniejsza od 0");
-            if (value == 0)
+            double temp = 0;
+            if ((value <= 0) || (unit == UnitOfMeasure.centimeter && value >= 1000)
+                || (unit == UnitOfMeasure.meter && value >= 10)
+                    || (unit == UnitOfMeasure.milimeter && value >= 10000))
             {
-                switch (unit)
-                {
-                    case UnitOfMeasure.centimeter:
-                        return 10;
-                    case UnitOfMeasure.meter:
-                        return 0.1;
-                    case UnitOfMeasure.milimeter:
-                        return 100;
-                    
-                }
+                throw new ArgumentOutOfRangeException("Wartość nie może być mniejsza od 0");
             }
-            if ((unit == UnitOfMeasure.centimeter && value > 1000)
-                || (unit == UnitOfMeasure.meter && value > 10)
-                    || (unit == UnitOfMeasure.milimeter && value > 10_000))
-            {
-                throw new ArgumentException("Zbyt duża wartość");
-            }
+            
             else if (unit == UnitOfMeasure.centimeter)
             {
-                return (double)Math.Round(value, 1);
+                if (Math.Round(value, 1) > 0) temp = Math.Round(value, 1);
+                else throw new ArgumentOutOfRangeException();
             }
             else if (unit == UnitOfMeasure.meter)
             {
-                return Math.Round(value, 3);
+                if (Math.Round(value, 3) > 0) temp = Math.Round(value, 3);
+                else throw new ArgumentOutOfRangeException();
             }
             else if (unit == UnitOfMeasure.milimeter)
             {
-                return (double)Math.Round(value);
+                if (Math.Round(value) > 0) temp = Math.Round(value);
+                else throw new ArgumentOutOfRangeException();
             }
-            else return 0.1;
+            return temp;
+            
+        }
+
+        private double ValueDefoult(UnitOfMeasure unit)
+        {
+            double temp = 0;
+            switch (unit)
+            {
+                case UnitOfMeasure.centimeter:
+                    temp = 10;
+                    break;
+                case UnitOfMeasure.meter:
+                    temp = 0.1;
+                    break;
+                case UnitOfMeasure.milimeter:
+                    temp = 100;
+                    break;
+                default:
+                    temp = 0.1;
+                    break;
+
+            }
+            return temp;
         }
 
         //properties
@@ -109,17 +146,21 @@ namespace PudelkoLibrary
         {
             get
             {
-                switch (Unit)
+                double temp = 0;
+                switch (unit)
                 {
                     case UnitOfMeasure.centimeter:
-                        return Math.Round(a / 100, 3);
+                        temp =  Math.Round(a / 100, 3);
+                            break;
                     case UnitOfMeasure.meter:
-                        return Math.Round(a, 3);
+                        temp = Math.Round(a, 3);
+                            break;
                     case UnitOfMeasure.milimeter:
-                        return Math.Round(a / 1000, 3);
-                    default:
-                        return 0.1;
+                        temp = Math.Round(a / 1000, 3);
+                            break;
                 }
+
+            return temp;
             }
         }
 
@@ -127,17 +168,21 @@ namespace PudelkoLibrary
         {
             get
             {
-                switch (Unit)
+                double temp = 0;
+                switch (unit)
                 {
                     case UnitOfMeasure.centimeter:
-                        return Math.Round(b / 100, 3);
+                        temp = Math.Round(b / 100, 3);
+                        break;
                     case UnitOfMeasure.meter:
-                        return Math.Round(b, 3);
+                        temp = Math.Round(b, 3);
+                        break;
                     case UnitOfMeasure.milimeter:
-                        return Math.Round(b / 1000, 3);
-                    default:
-                        return 0.1;
+                        temp = Math.Round(b / 1000, 3);
+                        break;
+
                 }
+                return temp;
             }
         }
 
@@ -145,23 +190,27 @@ namespace PudelkoLibrary
         {
             get
             {
-                switch (Unit)
+                double temp = 0;
+                switch (unit)
                 {
                     case UnitOfMeasure.centimeter:
-                        return Math.Round(c / 100, 3);
+                        temp = Math.Round(c / 100, 3);
+                        break;
                     case UnitOfMeasure.meter:
-                        return Math.Round(c, 3);
+                        temp = Math.Round(c, 3);
+                        break;
                     case UnitOfMeasure.milimeter:
-                        return Math.Round(c / 1000, 3);
-                    default:
-                        return 0.1;
+                        temp = Math.Round(c / 1000, 3);
+                        break;
+
                 }
+                return temp;
             }
         }
 
         public override string ToString()
         {
-            return this.ToString( "m", null);
+            return this.ToString("m", null);
         }
 
         public string ToString(string format) => this.ToString(format, null);
@@ -192,12 +241,12 @@ namespace PudelkoLibrary
         }
 
         //properties
-        public double Objetosc => Math.Round(A * B * C, 6);
+        public double Objetosc => Math.Round(A * B * C, 9);
 
         public double Pole => Math.Round(A * B + A * C + B * C, 6);
 
 
-        public bool Equals( Pudelko other)
+        public bool Equals(Pudelko other)
         {
             if (other is null) return false;
             if (Object.ReferenceEquals(this, other)) return true;
@@ -205,7 +254,7 @@ namespace PudelkoLibrary
             return (A == other.A) && (B == other.B) && (C == other.C);
         }
 
-        public override bool Equals( object obj)
+        public override bool Equals(object obj)
         {
             if (obj is Pudelko)
                 return base.Equals((Pudelko)obj);
@@ -214,7 +263,7 @@ namespace PudelkoLibrary
         }
 
         public override int GetHashCode() => (A, B, C).GetHashCode();
-        
+
         public static bool Equals(Pudelko p1, Pudelko p2)
         {
             if ((p1 is null) && (p2 is null)) return true;
@@ -232,8 +281,8 @@ namespace PudelkoLibrary
         public static Pudelko operator +(Pudelko p1, Pudelko p2)
         {
             double temp1, temp2;
-            double[] p1Tab = new double[] { p1.A, p1.B, p1.C };
-            double[] p2Tab = new double[] { p2.A, p2.B, p2.C };
+            double[] p1Tab = p1.sizesAsMeter;
+            double[] p2Tab = p2.sizesAsMeter;
             Array.Sort(p1Tab);
             Array.Sort(p2Tab);
 
@@ -255,6 +304,91 @@ namespace PudelkoLibrary
             }
             return new Pudelko(p1Tab[0] + p2Tab[0], temp1, temp2);
         }
+
+
+
+        public static implicit operator Pudelko(Tuple<int, int, int> tuple)
+        {
+            
+            return new Pudelko((double)tuple.Item1, (double)tuple.Item2, (double)tuple.Item3, UnitOfMeasure.milimeter);
+            
+        }
+
+        public static explicit operator double[](Pudelko P) => P.sizesAsMeter;
+
+
+        public static double ShowItem(int i, Pudelko p1)
+        {
+            //double[] p1Tab = p1.sizesAsMeter;
+            return p1.sizesAsMeter[i];
+        }
+
+        public Pudelko[] ShowItems(Pudelko p1)
+        {
+            var temp = new Pudelko[3];
+            int i = 0;
+            foreach (var x in p1)
+            {
+                temp[i] = x;
+                i++;
+            }
+            return temp;
+        }
+        // implementacja Ienumerable
+        private readonly Pudelko[] _size;
+        public Pudelko(Pudelko[] pudelkoTab)
+        {
+            _size = new Pudelko[pudelkoTab.Length];
+            for  (int i = 0; i< pudelkoTab.Length; i++)
+            {
+                _size[i] = pudelkoTab[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (IEnumerator)GetEnumerator();
+        }
+
+        public Pudelko GetEnumerator()
+        {
+            return new Pudelko(_size);
+        }
+        
+        int currentIndex = -1;
+
+        public bool MoveNext()
+        {
+            currentIndex++;
+
+            return (currentIndex < _size.Length);
+        }
+
+        object IEnumerator.Current => Current;
+
+        public Pudelko Current
+        {
+            get
+            {
+                try
+                {
+                    return _size[currentIndex];
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+        }
+
+        public void Reset()
+        {
+            currentIndex = -1;
+        }
+
+
+
+
     }
 
 }
