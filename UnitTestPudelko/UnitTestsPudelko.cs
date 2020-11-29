@@ -12,12 +12,12 @@ namespace PudelkoUnitTests
     [TestClass]
     public static class InitializeCulture
     {
-        [AssemblyInitialize]
-        public static void SetEnglishCultureOnAllUnitTest(TestContext context)
-        {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
-        }
+        //[AssemblyInitialize]
+        //public static void SetEnglishCultureOnAllUnitTest(TestContext context)
+        //{
+        //    Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+        //    Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
+        //}
     }
 
     // ========================================

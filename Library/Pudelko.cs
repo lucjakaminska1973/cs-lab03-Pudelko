@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using System.Linq;
 
 namespace PudelkoLibrary
 {
@@ -14,7 +15,7 @@ namespace PudelkoLibrary
         centimeter
     }
 
-    public sealed class Pudelko : IFormattable, IEquatable<Pudelko>, IEnumerable, IEnumerator
+    public sealed class Pudelko :  IEquatable<Pudelko>, IEnumerable, IEnumerator
     {
         private readonly double a;
         private readonly double b;
@@ -25,6 +26,9 @@ namespace PudelkoLibrary
         protected double[] getSize;
         public double[] sizesAsMeter => getSize;
 
+
+        CultureInfo culture = new CultureInfo("en-US");
+
         public Pudelko(double a, double b, double c, UnitOfMeasure unit)
         {
             this.unit = unit;
@@ -32,6 +36,7 @@ namespace PudelkoLibrary
             this.b = GetValue(b, unit);
             this.c = GetValue(c, unit);
             ToTab();
+            GetFormat();
         }
 
         public Pudelko(double a, double b, double c)
@@ -41,6 +46,7 @@ namespace PudelkoLibrary
             this.b = GetValue(b, UnitOfMeasure.meter);
             this.c = GetValue(c, UnitOfMeasure.meter);
             ToTab();
+            GetFormat();
         }
 
         public Pudelko(double a, double b, UnitOfMeasure unit)
@@ -51,6 +57,7 @@ namespace PudelkoLibrary
             this.b = GetValue(b, unit);
             this.c = ValueDefoult(unit);
             ToTab();
+            GetFormat();
         }
 
         public Pudelko(double a, double b)
@@ -60,6 +67,7 @@ namespace PudelkoLibrary
             this.b = GetValue(b, unit);
             this.c = ValueDefoult(unit);
             ToTab();
+            GetFormat();
         }
 
         public Pudelko(double a, UnitOfMeasure unit)
@@ -69,6 +77,7 @@ namespace PudelkoLibrary
             this.b = ValueDefoult(unit);
             this.c = ValueDefoult(unit);
             ToTab();
+            GetFormat();
         }
 
         public Pudelko(double a)
@@ -78,16 +87,17 @@ namespace PudelkoLibrary
             this.b = ValueDefoult(unit);
             this.c = ValueDefoult(unit);
             ToTab();
+            GetFormat();
         }
 
-        
 
-        public Pudelko() : this(10, 10, 10, UnitOfMeasure.centimeter) { ToTab(); }
+
+        public Pudelko() : this(10, 10, 10, UnitOfMeasure.centimeter) { ToTab(); GetFormat(); }
 
         public void ToTab()
         {
             getSize = new double[] { A, B, C };
-            
+
         }
 
         private double GetValue(double value, UnitOfMeasure unit)
@@ -99,15 +109,15 @@ namespace PudelkoLibrary
             {
                 throw new ArgumentOutOfRangeException("Wartość nie może być mniejsza od 0");
             }
-            
+
             else if (unit == UnitOfMeasure.centimeter)
             {
-                if (Math.Round(value, 1) > 0) temp = Math.Round(value, 1);
+                if (Math.Round(value, 1) > 0) temp = Math.Round(value, 1, MidpointRounding.AwayFromZero);
                 else throw new ArgumentOutOfRangeException();
             }
             else if (unit == UnitOfMeasure.meter)
             {
-                if (Math.Round(value, 3) > 0) temp = Math.Round(value, 3);
+                if (Math.Round(value, 3) > 0) temp = Math.Round(value, 3, MidpointRounding.ToEven);
                 else throw new ArgumentOutOfRangeException();
             }
             else if (unit == UnitOfMeasure.milimeter)
@@ -116,7 +126,7 @@ namespace PudelkoLibrary
                 else throw new ArgumentOutOfRangeException();
             }
             return temp;
-            
+
         }
 
         private double ValueDefoult(UnitOfMeasure unit)
@@ -150,17 +160,17 @@ namespace PudelkoLibrary
                 switch (unit)
                 {
                     case UnitOfMeasure.centimeter:
-                        temp =  Math.Round(a / 100, 3);
-                            break;
+                        temp = Math.Round(a / 100, 3);
+                        break;
                     case UnitOfMeasure.meter:
                         temp = Math.Round(a, 3);
-                            break;
+                        break;
                     case UnitOfMeasure.milimeter:
                         temp = Math.Round(a / 1000, 3);
-                            break;
+                        break;
                 }
 
-            return temp;
+                return temp;
             }
         }
 
@@ -172,13 +182,13 @@ namespace PudelkoLibrary
                 switch (unit)
                 {
                     case UnitOfMeasure.centimeter:
-                        temp = Math.Round(b / 100, 3);
+                        temp = Math.Round(b / 100, 3, MidpointRounding.AwayFromZero);
                         break;
                     case UnitOfMeasure.meter:
-                        temp = Math.Round(b, 3);
+                        temp = Math.Round(b, 3, MidpointRounding.ToEven);
                         break;
                     case UnitOfMeasure.milimeter:
-                        temp = Math.Round(b / 1000, 3);
+                        temp = Math.Round(b / 1000, 3, MidpointRounding.ToEven);
                         break;
 
                 }
@@ -197,10 +207,10 @@ namespace PudelkoLibrary
                         temp = Math.Round(c / 100, 3);
                         break;
                     case UnitOfMeasure.meter:
-                        temp = Math.Round(c, 3);
+                        temp = Math.Round(c, 3, MidpointRounding.ToEven);
                         break;
                     case UnitOfMeasure.milimeter:
-                        temp = Math.Round(c / 1000, 3);
+                        temp = Math.Round(c / 1000, 3, MidpointRounding.ToEven);
                         break;
 
                 }
@@ -208,42 +218,85 @@ namespace PudelkoLibrary
             }
         }
 
-        public override string ToString()
+        public string GetFormat()
         {
-            return this.ToString("m", null);
+
+            string format = "m";
+            
+            switch (unit)
+            {
+                case UnitOfMeasure.meter:
+                    format = "m";
+                    break;
+                case UnitOfMeasure.centimeter:
+                    format = "cm";
+                    break;
+                case UnitOfMeasure.milimeter:
+                    format = "mm";
+                    break;
+            }
+            return format;
+
         }
 
-        public string ToString(string format) => this.ToString(format, null);
+        
+
+        public override string ToString()
+        {
+            return this.ToString("c", CultureInfo.CreateSpecificCulture("en-EN"));
+        }
+
+
+
+        //IFormatProvider formatProvider = CultureInfo.CreateSpecificCulture("en-GB");
+        public string ToString(string format) => this.ToString(format, CultureInfo.CreateSpecificCulture("en-EN"));
+
+
 
         public string ToString(string format, IFormatProvider formatProvider)
         {
+            if (String.IsNullOrEmpty(format)) format = "m";
+            if (formatProvider == null) formatProvider = CultureInfo.CreateSpecificCulture("en-En");
+            StringBuilder temp = new StringBuilder();
+            string t;
+           
+
             switch (format)
             {
                 case "m":
-                    string aAsMeter = string.Format("{0:0,000}", a);
-                    string bAsMeter = string.Format("{0:0,000}", b);
-                    string cAsMeter = string.Format("{0:0,000}", c);
-                    return $"";
+                    string aAsMeter = string.Format("{0:0.000}", a);
+                    string bAsMeter = string.Format("{0:0.000}", b);
+                    string cAsMeter = string.Format("{0:0.000}", c);
+                    t = $"{aAsMeter} m × {bAsMeter} m × {cAsMeter} m";
+                    temp.Append(t).Replace(',', '.');
+                    return temp.ToString();
                 case "cm":
-                    string aAsCentimeter = string.Format("{0:0,0}", a);
-                    string bAsCentimeter = string.Format("{0:0,0}", b);
-                    string cAsCentimeter = string.Format("{0:0,0}", c);
-                    return $"";
+                    string aAsCentimeter = string.Format("{0:0.0}", a);
+                    string bAsCentimeter = string.Format("{0:0.0}", b);
+                    string cAsCentimeter = string.Format("{0:0.0}", c);
+                    //t = $"{aAsCentimeter} cm × {bAsCentimeter} cm × {cAsCentimeter} cm";
+                    //temp.Append(t).Replace(',', '.');
+                   return $"{aAsCentimeter} cm × {bAsCentimeter} cm × {cAsCentimeter} cm";
+                    //return temp.ToString();
                 case "mm":
                     int aAsMilimeter = (int)a;
                     int bAsMilimeter = (int)b;
                     int cAsMilimeter = (int)c;
-                    return $"";
+                    t = $"{aAsMilimeter} mm × {bAsMilimeter} mm × {cAsMilimeter} mm";
+                    temp.Append(t).Replace(',', '.');
+                    return temp.ToString();
                 default:
-                    return "";
+                    return $"{A} m × {B} m × {C} m";
 
             }
         }
-
-        //properties
+    
+    //properties
         public double Objetosc => Math.Round(A * B * C, 9);
 
         public double Pole => Math.Round(A * B + A * C + B * C, 6);
+
+        public double SumaBokow => A + B + C;
 
 
         public bool Equals(Pudelko other)
@@ -386,8 +439,82 @@ namespace PudelkoLibrary
             currentIndex = -1;
         }
 
+        
+        public static Pudelko ParseToPudelko(string parseString)
+        {
+            
+            //parseString = "250.0 cm × 932.1 cm × 10.0 cm";
+            char[] arr = parseString.ToCharArray();
+            foreach (var i in arr)
+                Console.WriteLine(i);
+            int x1 = Array.IndexOf(arr, '×');
+            int x2 = Array.LastIndexOf(arr, '×');
+
+            char x = arr[arr.Length - 2];
+            int j;
+
+            if (x == 'c' || x == 'm')
+            {
+                j = 1;
+            }
+            else j = 0;
 
 
+            StringBuilder A = new StringBuilder();
+            for (var i = 0; i <= x1 - 4-j; i++)
+            {
+                A.Append(arr[i]);
+            }
+            A.Replace('.', ',');
+            string aa = A.ToString().Trim();
+         
+            var parseA = Convert.ToDouble(aa);
+            A.Clear();
+
+
+
+            for (var i = x1 + 2; i <= x2 - 4-j; i++)
+            {
+                A.Append(arr[i]);
+            }
+            string bb = A.ToString().Trim();
+           
+            var parseB = Convert.ToDouble(bb);
+            A.Clear();
+
+
+            for (var i = x2 + 2; i <= arr.Length - 3-j; i++)
+            {
+                A.Append(arr[i]);
+            }
+            A.Replace('.', ',');
+            string cc = A.ToString().Trim();
+            Console.WriteLine(aa);
+            var parseC = Convert.ToDouble(cc);
+            A.Clear();
+
+            Console.WriteLine($"{parseC}");
+
+            
+            UnitOfMeasure un = UnitOfMeasure.meter;
+
+            switch (x)
+            {
+                case ' ':
+                    un = UnitOfMeasure.meter;
+                    break;
+                case 'c':
+                    un = UnitOfMeasure.centimeter;
+                    break;
+                case 'm':
+                    un = UnitOfMeasure.milimeter;
+                    break;
+            }
+            Console.WriteLine($"{un}");
+
+
+            return new Pudelko( parseA, parseB, parseC, un);
+        }
 
     }
 
